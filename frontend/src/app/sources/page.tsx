@@ -46,6 +46,9 @@ function AddSourceDialog({ onClose }: { onClose: () => void }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
+    // #region agent log
+    fetch('http://127.0.0.1:7258/ingest/c0fc8b9f-abeb-4f04-8b15-72e25c3cc2b0',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'1d3f66'},body:JSON.stringify({sessionId:'1d3f66',runId:'post-fix',hypothesisId:'H1',location:'sources/page.tsx:handleSubmit:start',message:'create source submit',data:{source_type:form.source_type,hasUrl:!!form.url,hasConfig:!!form.config},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     try {
       const payload: any = {
         name: form.name,
@@ -55,10 +58,16 @@ function AddSourceDialog({ onClose }: { onClose: () => void }) {
         config: form.config ? JSON.parse(form.config) : {},
       }
       await sourcesApi.create(payload)
+      // #region agent log
+      fetch('http://127.0.0.1:7258/ingest/c0fc8b9f-abeb-4f04-8b15-72e25c3cc2b0',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'1d3f66'},body:JSON.stringify({sessionId:'1d3f66',runId:'post-fix',hypothesisId:'H1',location:'sources/page.tsx:handleSubmit:success',message:'create source ok',data:{name:form.name},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       toast.success("Source added")
       qc.invalidateQueries({ queryKey: ["sources"] })
       onClose()
     } catch (err: any) {
+      // #region agent log
+      fetch('http://127.0.0.1:7258/ingest/c0fc8b9f-abeb-4f04-8b15-72e25c3cc2b0',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'1d3f66'},body:JSON.stringify({sessionId:'1d3f66',runId:'post-fix',hypothesisId:'H1',location:'sources/page.tsx:handleSubmit:error',message:'create source failed',data:{message:err?.message,status:err?.response?.status,detail:err?.response?.data?.detail,code:err?.code},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       toast.error(err?.response?.data?.detail || err?.message || "Failed to add source")
     } finally {
       setSubmitting(false)

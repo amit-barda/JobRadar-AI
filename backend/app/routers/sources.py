@@ -10,13 +10,21 @@ from ..utils.auth import get_current_active_user
 router = APIRouter()
 
 
-@router.get("/", response_model=List[JobSourceResponse])
+@router.get("", response_model=List[JobSourceResponse])
 def list_sources(db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
     return db.query(JobSource).filter(JobSource.user_id == current_user.id).all()
 
 
-@router.post("/", response_model=JobSourceResponse, status_code=201)
+@router.post("", response_model=JobSourceResponse, status_code=201)
 def create_source(data: JobSourceCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
+    # #region agent log
+    import json, time
+    try:
+        with open("/app/debug-1d3f66.log", "a", encoding="utf-8") as f:
+            f.write(json.dumps({"sessionId":"1d3f66","runId":"post-fix","hypothesisId":"H1","location":"sources.py:create_source","message":"backend create reached","data":{"source_type":data.source_type.value if hasattr(data.source_type,'value') else str(data.source_type),"name":data.name},"timestamp":int(time.time()*1000)}) + "\n")
+    except Exception:
+        pass
+    # #endregion
     source = JobSource(user_id=current_user.id, **data.model_dump())
     db.add(source)
     db.commit()
